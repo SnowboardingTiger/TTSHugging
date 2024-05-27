@@ -15,9 +15,15 @@ jobs:
       with:
         python-version: '3.8'
 
-    - name: Install dependencies
+    - name: Install system dependencies
       run: |
-        pip install speechbrain torchaudio
+        sudo apt-get update
+        sudo apt-get install -y libsox-dev sox
+
+    - name: Install Python dependencies
+      run: |
+        pip install torch torchvision torchaudio
+        pip install speechbrain
 
     - name: Create TTS script
       run: |
