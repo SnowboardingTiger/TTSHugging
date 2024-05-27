@@ -19,24 +19,27 @@ jobs:
       run: |
         pip install speechbrain torchaudio
 
-    - name: Run TTS example
+    - name: Create TTS script
       run: |
-        import torchaudio
-        from speechbrain.inference.TTS import Tacotron2
-        from speechbrain.inference.vocoders import HIFIGAN
+        echo "import torchaudio" > run_tts.py
+        echo "from speechbrain.inference.TTS import Tacotron2" >> run_tts.py
+        echo "from speechbrain.inference.vocoders import HIFIGAN" >> run_tts.py
+        echo "" >> run_tts.py
+        echo "# Initialize TTS (tacotron2) and Vocoder (HiFIGAN)" >> run_tts.py
+        echo "tacotron2 = Tacotron2.from_hparams(source='speechbrain/tts-tacotron2-ljspeech', savedir='tmpdir_tts')" >> run_tts.py
+        echo "hifi_gan = HIFIGAN.from_hparams(source='speechbrain/tts-hifigan-ljspeech', savedir='tmpdir_vocoder')" >> run_tts.py
+        echo "" >> run_tts.py
+        echo "# Running the TTS" >> run_tts.py
+        echo "mel_output, mel_length, alignment = tacotron2.encode_text('Mary had a little lamb')" >> run_tts.py
+        echo "" >> run_tts.py
+        echo "# Running Vocoder (spectrogram-to-waveform)" >> run_tts.py
+        echo "waveforms = hifi_gan.decode_batch(mel_output)" >> run_tts.py
+        echo "" >> run_tts.py
+        echo "# Save the waveform" >> run_tts.py
+        echo "torchaudio.save('example_TTS.wav', waveforms.squeeze(1), 22050)" >> run_tts.py
 
-        # Initialize TTS (tacotron2) and Vocoder (HiFIGAN)
-        tacotron2 = Tacotron2.from_hparams(source="speechbrain/tts-tacotron2-ljspeech", savedir="tmpdir_tts")
-        hifi_gan = HIFIGAN.from_hparams(source="speechbrain/tts-hifigan-ljspeech", savedir="tmpdir_vocoder")
-
-        # Running the TTS
-        mel_output, mel_length, alignment = tacotron2.encode_text("Mary had a little lamb")
-
-        # Running Vocoder (spectrogram-to-waveform)
-        waveforms = hifi_gan.decode_batch(mel_output)
-
-        # Save the waveform
-        torchaudio.save('example_TTS.wav', waveforms.squeeze(1), 22050)
+    - name: Run TTS script
+      run: python run_tts.py
 
     - name: Upload TTS output
       uses: actions/upload-artifact@v2
